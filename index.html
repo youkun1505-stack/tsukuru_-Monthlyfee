@@ -489,24 +489,25 @@
             });
 
             const totalStr = total.toLocaleString() + "円";
-            const TOTAL_LINE_WIDTH = 40; // 全体の目安幅
+            const TOTAL_LINE_WIDTH = 42; // 全体の基準幅を微調整
 
             let t = `本日の月謝　：${dateHeader}\n`;
-            t += `----------------------------------------\n`;
+            t += `------------------------------------------\n`;
             
             rows.forEach(r => {
                 const labelWidth = getDisplayWidth(r.label);
                 const amountWidth = getDisplayWidth(r.amount);
-                // 間のスペースを埋める（.を使用）
+                // 合計金額と同じ位置に末尾が来るようドットの数を調整
                 const dotsCount = Math.max(2, TOTAL_LINE_WIDTH - labelWidth - amountWidth);
                 const dots = ".".repeat(dotsCount);
                 t += `${r.label}${dots}${r.amount}\n`;
             });
             
-            t += `----------------------------------------\n`;
+            t += `------------------------------------------\n`;
             const totalLabel = "合　計";
             const totalLabelWidth = getDisplayWidth(totalLabel);
             const totalAmountWidth = getDisplayWidth(totalStr);
+            // 合計ラベルと合計金額の間のドット数を、各行と同じ幅になるように計算
             const totalDotsCount = Math.max(2, TOTAL_LINE_WIDTH - totalLabelWidth - totalAmountWidth);
             const totalDots = ".".repeat(totalDotsCount);
             
@@ -524,13 +525,12 @@
             el.select();
             document.execCommand('copy');
             document.body.removeChild(el);
-            showMessage("金額を右揃え（リーダー線形式）でコピーしました");
+            showMessage("金額と合計を右揃えでコピーしました");
         }
 
         function exportToText() {
             if (members.length === 0) return;
             const dateFilterVal = document.getElementById('filterDate').value;
-            // 絞り込まれている日付があればそれを使用、なければ今日の日付を使用
             const dateStr = dateFilterVal !== "all" ? dateFilterVal : new Date().toISOString().split('T')[0];
             
             const blob = new Blob([generateExportText()], { type: 'text/plain' });
