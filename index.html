@@ -175,7 +175,6 @@
         let editId = null;
         let selectedMonths = [];
 
-        // ローカルストレージからデータを読み込む（GitHub公開時でもブラウザに保存されるようにする）
         function loadData() {
             const saved = localStorage.getItem('monthlyFeeMembers');
             if (saved) {
@@ -449,6 +448,20 @@
             const d = document.createElement('div'); d.textContent = s; return d.innerHTML;
         }
 
+        // 文字列の表示幅（半角1、全角2として計算）を取得する関数
+        function getDisplayWidth(str) {
+            let width = 0;
+            for (let i = 0; i < str.length; i++) {
+                const charCode = str.charCodeAt(i);
+                if (charCode >= 0x00 && charCode <= 0x7f) {
+                    width += 1;
+                } else {
+                    width += 2;
+                }
+            }
+            return width;
+        }
+
         function generateExportText() {
             const monthFilterVal = document.getElementById('filterMonth').value;
             const dateFilterVal = document.getElementById('filterDate').value;
@@ -476,19 +489,28 @@
             });
 
             const totalStr = total.toLocaleString() + "円";
-            const maxAmountLen = Math.max(...rows.map(r => r.amount.length), totalStr.length);
+            const TOTAL_LINE_WIDTH = 40; // 全体の目安幅
 
             let t = `本日の月謝　：${dateHeader}\n`;
-            t += `ーーーーーーーーーーーーーー\n`;
+            t += `----------------------------------------\n`;
             
             rows.forEach(r => {
-                const paddedAmount = r.amount.padStart(maxAmountLen, ' ');
-                t += `${r.label}　${paddedAmount}\n`;
+                const labelWidth = getDisplayWidth(r.label);
+                const amountWidth = getDisplayWidth(r.amount);
+                // 間のスペースを埋める（.を使用）
+                const dotsCount = Math.max(2, TOTAL_LINE_WIDTH - labelWidth - amountWidth);
+                const dots = ".".repeat(dotsCount);
+                t += `${r.label}${dots}${r.amount}\n`;
             });
             
-            t += `ーーーーーーーーーーーーーー\n`;
-            const paddedTotal = totalStr.padStart(maxAmountLen, ' ');
-            t += `　　　　　　合計：${paddedTotal}\n`;
+            t += `----------------------------------------\n`;
+            const totalLabel = "合　計";
+            const totalLabelWidth = getDisplayWidth(totalLabel);
+            const totalAmountWidth = getDisplayWidth(totalStr);
+            const totalDotsCount = Math.max(2, TOTAL_LINE_WIDTH - totalLabelWidth - totalAmountWidth);
+            const totalDots = ".".repeat(totalDotsCount);
+            
+            t += `${totalLabel}${totalDots}${totalStr}\n`;
             
             return t;
         }
@@ -502,7 +524,7 @@
             el.select();
             document.execCommand('copy');
             document.body.removeChild(el);
-            showMessage("フォーマット済みテキストをコピーしました");
+            showMessage("金額を右揃え（リーダー線形式）でコピーしました");
         }
 
         function exportToText() {
