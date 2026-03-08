@@ -529,14 +529,18 @@
 
         function exportToText() {
             if (members.length === 0) return;
+            const dateFilterVal = document.getElementById('filterDate').value;
+            // 絞り込まれている日付があればそれを使用、なければ今日の日付を使用
+            const dateStr = dateFilterVal !== "all" ? dateFilterVal : new Date().toISOString().split('T')[0];
+            
             const blob = new Blob([generateExportText()], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `月謝管理_${new Date().getTime()}.txt`;
+            a.download = `月謝記録_${dateStr}.txt`;
             a.click();
             URL.revokeObjectURL(url);
-            showMessage("ファイルを保存しました");
+            showMessage(`「月謝記録_${dateStr}.txt」を保存しました`);
         }
 
         function clearAll() {
